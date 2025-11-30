@@ -71,7 +71,7 @@ export default function Questions () {
 			changueCurrent(1)
 			setScore(score + 1)
 			const topics = categories.filter(category => queries.categories.find(cat => cat === category.id)).map(cat => cat.name)
-			getQuestions(topics, 5, true)
+			getQuestions(topics, 5, true, queries.difficulty)
 		}, 1000)
 	}
 

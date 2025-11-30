@@ -8,9 +8,9 @@ export const useQuestionsStore = (set, get) => ({
 	currentQuestion: 1,
 	score: 1,
 	win: undefined,
-	getQuestions: (topics, number, infinity) => {
+	getQuestions: (topics, number, infinity, difficulty) => {
 		infinity ? set({ loadingInfinity: true }) : set({ loading: true })
-		getQuestions(topics, number)
+		getQuestions(topics, number, difficulty)
 			.then(data => set({ questions: data }))
 			.catch(err => set({ error: [true, err] }))
 			.finally(() => infinity ? set({ loadingInfinity: false }) : set({ loading: false }))

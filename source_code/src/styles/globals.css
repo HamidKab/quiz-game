@@ -2,9 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+	--bg: #ffffff;
+	--panel: #ffffff;
+	--text: #0f172a;
+	--muted: #64748b;
+	--card: #ffffff;
+}
+
+.theme-dark {
+	--bg: #0b1220;
+	--panel: #0f172a;
+	--text: #e6eef8;
+	--muted: #9aa6b2;
+	--card: #0f172a;
+}
+
 #__next {
 	min-height: 100vh;
 }
+
 html {
 	scroll-behavior: smooth;
 }
@@ -14,10 +31,12 @@ dialog::backdrop {
 body {
 	transition: all 0.3s ease-in-out;
 	overflow-x: hidden;
+	background-color: var(--bg);
+	color: var(--text);
 }
 
 .mainHome {
-	background: rgb(28, 35, 58) url('/bg-home.svg');
+	background: linear-gradient(135deg, rgb(28, 35, 58) 0%, rgb(45, 55, 85) 100%), url('/bg-home.svg');
 	background-size: 70%;
 }
 .disabled {
@@ -29,6 +48,39 @@ body {
 }
 .progressBar::after {
 	width: calc((100% / var(--segments)) * var(--current));
+}
+
+/* Dark-mode overrides for common utility classes (minimal coverage) */
+.theme-dark .bg-white { background-color: var(--card) !important; }
+.theme-dark .bg-slate-200 { background-color: #172033 !important; }
+.theme-dark .text-slate-900 { color: var(--text) !important; }
+.theme-dark .text-black { color: var(--text) !important; }
+.theme-dark .bg-blue-500 { background-color: #2563eb !important; }
+.theme-dark .bg-blue-600 { background-color: #1d4ed8 !important; }
+.theme-dark .border-white\/50 { border-color: rgba(255,255,255,0.06) !important; }
+.theme-dark .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.6) !important; }
+.theme-dark .drop-shadow-lg { filter: drop-shadow(0 8px 12px rgba(0,0,0,0.6)); }
+
+/* Force GameModes to keep light appearance regardless of theme */
+.gm-force-light {
+	color: #0f172a;
+}
+.gm-force-light .gm-card {
+	background-color: rgba(209,213,219,0.3);
+	backdrop-filter: blur(2px);
+}
+.gm-force-light .gm-card:hover {
+	background-color: #ffffff;
+	backdrop-filter: none;
+}
+.theme-dark .gm-force-light {
+	color: #0f172a !important;
+}
+.theme-dark .gm-force-light .gm-card {
+	background-color: rgba(209,213,219,0.3) !important;
+}
+.theme-dark .gm-force-light .gm-card:hover {
+	background-color: #ffffff !important;
 }
 
 /* Pulse animation ============================= */

@@ -2,7 +2,7 @@ import offlineQuestions from '@/assets/questions.json'
 
 const randomArray = (arr) => arr.toSorted(() => 0.5 - Math.random())
 
-export default async function getQuestions (topics, qNumber) {
+export default async function getQuestions (topics, qNumber, difficulty = 'medium') {
 	const randomTopics = randomArray(topics)
 	const messyTopics = []
 	for (let i = 0; i < qNumber; i++) messyTopics.push(randomTopics[i % topics.length])
@@ -15,7 +15,11 @@ export default async function getQuestions (topics, qNumber) {
 
 		const questions = []
 		Object.keys(questionsPerTopic).forEach(topic => {
-			randomArray(offlineQuestions[topic]).slice(0, questionsPerTopic[topic]).forEach(question => {
+			// Filter questions by difficulty
+			const filteredQuestions = offlineQuestions[topic].filter(q => q.difficulty === difficulty)
+			const questionsToUse = filteredQuestions.length > 0 ? filteredQuestions : offlineQuestions[topic]
+			
+			randomArray(questionsToUse).slice(0, questionsPerTopic[topic]).forEach(question => {
 				questions.push({
 					...question,
 					topic,

@@ -6,27 +6,71 @@ import { useEffect, useState } from 'react'
 import { MdInfo } from 'react-icons/md'
 import { GoAlert } from 'react-icons/go'
 import { BsFillStarFill } from 'react-icons/bs'
+import { FiSun, FiMoon } from 'react-icons/fi'
+import { initMusic, playMusic, pauseMusic } from '@/helpers/musicPlayer'
 
 export default function Footer ({ alert = false }) {
 	const [sound, setSound] = useState(false)
+	const [theme, setTheme] = useState('light')
 	const [showInfo, setShowInfo] = useState(false)
 
+	// initialize music and load saved preference
 	useEffect(() => {
-		if (!localStorage.getItem('sound')) localStorage.setItem('sound', sound)
-		else setSound(localStorage.getItem('sound') === 'true')
+		initMusic()
+		const stored = localStorage.getItem('sound')
+		if (stored === null) {
+			localStorage.setItem('sound', 'false')
+			setSound(false)
+		} else {
+			setSound(stored === 'true')
+		}
+
+		// initialize theme from preference or system
+		try {
+			const storedTheme = localStorage.getItem('theme')
+			if (storedTheme) {
+				setTheme(storedTheme)
+			} else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+				setTheme('dark')
+			}
+		} catch (e) {
+			// ignore
+		}
 	}, [])
 
-	useEffect(() => localStorage.setItem('sound', sound), [sound])
+	// when `sound` changes, persist preference and play/pause music
+	useEffect(() => {
+		localStorage.setItem('sound', sound)
+		if (sound) {
+			playMusic()
+			// play a confirmation SFX (allowed because user just interacted)
+			playSound('switch-on')
+		} else {
+			pauseMusic()
+			// play switch-off sound directly so it's heard even after pref is false
+			const off = new Audio('/sounds/switch-off.mp3')
+			off.volume = 0.25
+			off.play().catch(() => {})
+		}
+	}, [sound])
+
+	// apply theme changes to document root and persist
+	useEffect(() => {
+		try {
+			document.documentElement.classList.toggle('theme-dark', theme === 'dark')
+			localStorage.setItem('theme', theme)
+		} catch (e) {
+			// server-side or other errors - ignore
+		}
+	}, [theme])
 
 	function handleClick (info = false) {
-		info ? setShowInfo(!showInfo) : setSound(!sound)
-		playSound('switch-on')
+		if (info) return setShowInfo(s => !s)
+		setSound(s => !s)
 	}
 
-	function handleSoundON () {
-		setSound(true)
-		localStorage.setItem('sound', true)
-		playSound('switch-on')
+	function toggleTheme () {
+		setTheme(t => (t === 'dark' ? 'light' : 'dark'))
 	}
 
 	return (
@@ -50,15 +94,25 @@ export default function Footer ({ alert = false }) {
 						</p>
 					</li>
 
-					<li>
-						<button title={sound ? 'Mute' : 'Play music'} className='align-middle hover:scale-105 p-1.5 bg-white rounded-md'>
-							{
-								sound
-									? <Image src={soundOn} alt="" width={25} height={25} onClick={() => setSound(false)} />
-									: <Image src={soundOff} alt="" width={25} height={25} onClick={handleSoundON} />
-							}
-						</button>
-					</li>
+						<li>
+							<button title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'} className='align-middle hover:scale-105 p-1.5 bg-white rounded-md' onClick={toggleTheme} aria-pressed={theme === 'dark'} aria-label={theme === 'dark' ? 'Activate light theme' : 'Activate dark theme'}>
+								{
+									theme === 'dark'
+										? <FiSun className='text-[20px]' style={{ color: '#ffffff' }} />
+										: <FiMoon className='text-[20px]' style={{ color: '#000000' }} />
+								}
+							</button>
+							</li>
+
+							<li>
+							<button title={sound ? 'Mute' : 'Play music'} className='align-middle hover:scale-105 p-1.5 bg-white rounded-md' onClick={() => handleClick(false)} aria-pressed={sound} aria-label={sound ? 'Mute audio' : 'Play audio'}>
+								{
+									sound
+										? <Image src={soundOn} alt="Sound enabled" width={25} height={25} />
+										: <Image src={soundOff} alt="Sound disabled" width={25} height={25} />
+								}
+							</button>
+						</li>
 				</ul>
 			</nav>
 		</footer>

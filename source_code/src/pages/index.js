@@ -10,7 +10,7 @@ export default function Main () {
 	return (
 		<>
 			<Head>
-				<title>Quizi</title>
+				<title>Quizard</title>
 			</Head>
 			<MainHome />
 			<GameModes />
