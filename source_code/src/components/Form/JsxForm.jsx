@@ -76,7 +76,7 @@ export default function JsxForm ({ handleInputs, nowQueries }) {
 						{difficulties.map(diff => (
 							<label key={diff} className="w-full">
 								<input className='peer absolute hidden' type="radio" name="difficulty" id={diff} value={diff} defaultChecked={diff === nowQueries.difficulty} onChange={handleInputs} />
-								<span className='peer-checked:bg-blue-500 transition-colors peer-checked:text-white px-2 sm:px-4 py-2 rounded cursor-pointer bg-gray-200 text-center w-full inline-block active:scale-95 capitalize'>{diff}</span>
+								<span className='gm-force-light peer-checked:bg-blue-500 transition-colors peer-checked:text-white px-2 sm:px-4 py-2 rounded cursor-pointer bg-gray-200 text-center w-full inline-block active:scale-95 capitalize'>{diff}</span>
 							</label>
 						))}
 					</div>
