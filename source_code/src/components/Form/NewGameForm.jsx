@@ -33,6 +33,11 @@ export default function NewGameForm () {
 			return setNowQueries({ ...nowQueries, [e.target.name]: e.target.checked ? [...nowQueries.categories, e.target.value] : nowQueries.categories.filter(cat => cat !== e.target.value) })
 		}
 
+		if (e.target.name === 'difficulty') {
+			playSound('pop')
+			return setNowQueries({ ...nowQueries, difficulty: e.target.value })
+		}
+
 		playSound('pop')
 		setNowQueries({ ...nowQueries, [e.target.name]: e.target.value })
 	}
@@ -47,7 +52,7 @@ export default function NewGameForm () {
 		router.push({ pathname: '/play', query })
 
 		const cate = nowQueries.categories.map(cat => categoriesJSON.find(c => c.id === cat).name)
-		if (router.pathname === '/play') getQuestions(cate, nowQueries.infinitymode ? 5 : nowQueries.questions)
+		if (router.pathname === '/play') getQuestions(cate, nowQueries.infinitymode ? 5 : nowQueries.questions, nowQueries.infinitymode, nowQueries.difficulty)
 
 		closeDialog()
 	}

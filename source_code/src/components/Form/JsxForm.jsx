@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { defaultQuestions } from '@/helpers/gameConfig'
+import { defaultQuestions, difficulties } from '@/helpers/gameConfig'
 import { BsSkipEndFill } from 'react-icons/bs'
 import { IoMdInfinite } from 'react-icons/io'
 import { FaHeart } from 'react-icons/fa'
@@ -65,6 +65,18 @@ export default function JsxForm ({ handleInputs, nowQueries }) {
 							<label key={time} className="w-full">
 								<input className='peer absolute hidden' type="radio" name="time" id={`${time}s`} value={time} defaultChecked={time === Number(nowQueries.time)} onChange={handleInputs} disabled={!nowQueries.timemode} />
 								<span className={`peer-checked:bg-blue-500 transition-colors  peer-checked:text-white px-2 sm:px-4 py-2 rounded mr-3 cursor-pointer bg-gray-200 text-center w-full inline-block ${!nowQueries.timemode ? 'grayscale cursor-not-allowed' : 'active:scale-95'}`} translate="no">{time}s</span>
+							</label>
+						))}
+					</div>
+				</fieldset>
+
+				<fieldset className='p-1'>
+					<legend className='text-lg font-semibold mb-2'>Difficulty</legend>
+					<div className='flex gap-3'>
+						{difficulties.map(diff => (
+							<label key={diff} className="w-full">
+								<input className='peer absolute hidden' type="radio" name="difficulty" id={diff} value={diff} defaultChecked={diff === nowQueries.difficulty} onChange={handleInputs} />
+								<span className='peer-checked:bg-blue-500 transition-colors peer-checked:text-white px-2 sm:px-4 py-2 rounded cursor-pointer bg-gray-200 text-center w-full inline-block active:scale-95 capitalize'>{diff}</span>
 							</label>
 						))}
 					</div>

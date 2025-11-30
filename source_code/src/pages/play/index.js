@@ -22,7 +22,7 @@ export default function Play () {
 			const validQuery = queryValidator(router.query)
 			const cate = validQuery.categories.map(cat => categories.find(c => c.id === cat).name)
 			setQueries(validQuery)
-			getQuestions(cate, validQuery.infinitymode ? 5 : validQuery.questions)
+			getQuestions(cate, validQuery.infinitymode ? 5 : validQuery.questions, validQuery.infinitymode, validQuery.difficulty)
 		}
 	}, [router.isReady])
 

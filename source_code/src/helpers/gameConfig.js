@@ -7,9 +7,11 @@ const DEFAULT_TIME = 20
 const DEFAULT_QUESTIONS = 5
 const INFINITY_MODE = false
 const TIME_MODE = false
+const DIFFICULTIES = ['easy', 'medium', 'hard']
+const DEFAULT_DIFFICULTY = 'medium'
 
 export default function queryValidator (query) {
-	const { questions, time, infinitymode, timemode, categories } = query
+	const { questions, time, infinitymode, timemode, categories, difficulty } = query
 	const urlQueries = {}
 
 	if (questions && Number(questions)) {
@@ -34,6 +36,10 @@ export default function queryValidator (query) {
 		else urlQueries.timemode = false
 	} else urlQueries.timemode = TIME_MODE
 
+	if (difficulty && DIFFICULTIES.includes(difficulty)) {
+		urlQueries.difficulty = difficulty
+	} else urlQueries.difficulty = DEFAULT_DIFFICULTY
+
 	if (categories) {
 		const categoriesArray = typeof categories === 'string' ? categories.split(',') : categories
 		const categoriesArrayFiltered = categoriesArray.filter(category => categoriesJSON.map(category => category.id).includes(category))
@@ -54,5 +60,8 @@ export const defaultQuery = {
 	time: DEFAULT_TIME,
 	infinitymode: INFINITY_MODE,
 	timemode: TIME_MODE,
+	difficulty: DEFAULT_DIFFICULTY,
 	categories: categoriesJSON.map(category => category.id)
 }
+
+export const difficulties = DIFFICULTIES
