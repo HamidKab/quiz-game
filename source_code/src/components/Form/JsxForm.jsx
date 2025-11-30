@@ -21,10 +21,10 @@ export default function JsxForm ({ handleInputs, nowQueries }) {
 			<div className='flex gap-2 sm:gap-5 flex-col'>
 				<fieldset className='p-1'>
 					<legend className='text-lg font-semibold mb-2'>Wilcards</legend>
-					<ul className='flex gap-3 justify-between font-medium'>
+					<ul className='gm-force-light flex gap-3 justify-between font-medium'>
 						{
 							WILCARDS.map(({ name, icon, amount }) => (
-								<li key={name} className={'flex gap-2 justify-center items-center'}>
+								<li key={name} className={' flex gap-2 justify-center items-center'}>
 									<div className='p-[10px] aspect-square rounded text-white bg-blue-500 transition-transform text' title={name}>
 										{icon}
 									</div>
@@ -60,7 +60,7 @@ export default function JsxForm ({ handleInputs, nowQueries }) {
 						<label htmlFor="cbx2" className="cbx2" title={nowQueries.timemode ? 'Disable time mode' : 'Enable time mode'}></label>
 					</div>
 
-					<div className='flex gap-3'>
+					<div className='gm-force-light flex gap-3'>
 						{[10, 20, 30, 60].map(time => (
 							<label key={time} className="w-full">
 								<input className='peer absolute hidden' type="radio" name="time" id={`${time}s`} value={time} defaultChecked={time === Number(nowQueries.time)} onChange={handleInputs} disabled={!nowQueries.timemode} />
