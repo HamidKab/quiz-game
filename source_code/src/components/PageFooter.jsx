@@ -6,10 +6,12 @@ import { useEffect, useState } from 'react'
 import { MdInfo } from 'react-icons/md'
 import { GoAlert } from 'react-icons/go'
 import { BsFillStarFill } from 'react-icons/bs'
+import { FiSun, FiMoon } from 'react-icons/fi'
 import { initMusic, playMusic, pauseMusic } from '@/helpers/musicPlayer'
 
 export default function Footer ({ alert = false }) {
 	const [sound, setSound] = useState(false)
+	const [theme, setTheme] = useState('light')
 	const [showInfo, setShowInfo] = useState(false)
 
 	// initialize music and load saved preference
@@ -21,6 +23,18 @@ export default function Footer ({ alert = false }) {
 			setSound(false)
 		} else {
 			setSound(stored === 'true')
+		}
+
+		// initialize theme from preference or system
+		try {
+			const storedTheme = localStorage.getItem('theme')
+			if (storedTheme) {
+				setTheme(storedTheme)
+			} else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+				setTheme('dark')
+			}
+		} catch (e) {
+			// ignore
 		}
 	}, [])
 
@@ -40,9 +54,23 @@ export default function Footer ({ alert = false }) {
 		}
 	}, [sound])
 
+	// apply theme changes to document root and persist
+	useEffect(() => {
+		try {
+			document.documentElement.classList.toggle('theme-dark', theme === 'dark')
+			localStorage.setItem('theme', theme)
+		} catch (e) {
+			// server-side or other errors - ignore
+		}
+	}, [theme])
+
 	function handleClick (info = false) {
 		if (info) return setShowInfo(s => !s)
 		setSound(s => !s)
+	}
+
+	function toggleTheme () {
+		setTheme(t => (t === 'dark' ? 'light' : 'dark'))
 	}
 
 	return (
@@ -67,6 +95,16 @@ export default function Footer ({ alert = false }) {
 					</li>
 
 						<li>
+							<button title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'} className='align-middle hover:scale-105 p-1.5 bg-white rounded-md' onClick={toggleTheme} aria-pressed={theme === 'dark'} aria-label={theme === 'dark' ? 'Activate light theme' : 'Activate dark theme'}>
+								{
+									theme === 'dark'
+										? <FiSun className='text-[20px]' style={{ color: '#ffffff' }} />
+										: <FiMoon className='text-[20px]' style={{ color: '#000000' }} />
+								}
+							</button>
+							</li>
+
+							<li>
 							<button title={sound ? 'Mute' : 'Play music'} className='align-middle hover:scale-105 p-1.5 bg-white rounded-md' onClick={() => handleClick(false)} aria-pressed={sound} aria-label={sound ? 'Mute audio' : 'Play audio'}>
 								{
 									sound

@@ -16,7 +16,7 @@ export default function GameInfo () {
 				<AiFillInfoCircle className='text-[28px] text-slate-900' />
 			</button>
 
-			<aside className={`fixed h-fit transition-all z-10 lg:bottom-4 left-4 md:top-1/2 md:-translate-y-1/2 text-center text-slate-900 font-medium lg:!scale-100 lg:!opacity-100 ${showInfo ? 'bottom-12 scale-100 opacity-100' : 'bottom-0 scale-20 opacity-0'}`}>
+			<aside className={` gm-force-light fixed h-fit transition-all z-10 lg:bottom-4 left-4 md:top-1/2 md:-translate-y-1/2 text-center text-slate-900 font-medium lg:!scale-100 lg:!opacity-100 ${showInfo ? 'bottom-12 scale-100 opacity-100' : 'bottom-0 scale-20 opacity-0'}`}>
 				<div className='flex gap-2'>
 					{
 						!queries.infinitymode && <span className='bg-white p-2 rounded-md text-sm w-full pt-[9px] grid place-items-center' title='Number of questions'>
@@ -24,7 +24,7 @@ export default function GameInfo () {
 						</span>
 					}
 					{
-						queries.timemode && <span className='bg-white p-2 rounded-md text-sm w-full pt-[9px] grid place-items-center' title='Time'>
+						queries.timemode && <span className='gm-force-light bg-white p-2 rounded-md text-sm w-full pt-[9px] grid place-items-center' title='Time'>
 							{queries.time}
 						</span>
 					}
