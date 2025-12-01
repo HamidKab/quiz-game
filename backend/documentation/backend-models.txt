@@ -1,0 +1,139 @@
+# GameResult Backend (Leaderboard groundwork)
+
+**Branch:** `backend-models`  
+**Author:** Obinna  
+**Date:** December 01, 2025
+
+## Overview
+Added a backend model and API endpoint to capture game results (correct answers, time, difficulty, mode and timestamp). This lays the groundwork for a leaderboard feature to be implemented later. The endpoint accepts timed-mode submissions and stores optional user association (nullable) so anonymous plays are possible.
+
+## Changes Made
+
+### 1. Model (`backend/api/models.py`)
+- Added `GameResult` model with fields:
+	- `user` (FK to `settings.AUTH_USER_MODEL`, null=True, blank=True, related_name='game_results'; optional so anonymous plays are allowed)
+	- `correct_answers` (PositiveIntegerField, MinValueValidator(0))
+	- `total_questions` (PositiveIntegerField, optional — useful to compute percentage)
+	- `time_taken` (FloatField, seconds, MinValueValidator(0.0))
+	- `difficulty` (CharField with choices: `easy`, `medium`, `hard`, default `medium`)
+	- `mode` (CharField with choices: `practice`, `timed`, default `practice`)
+	- `played_at` (DateTimeField auto_now_add=True)
+- Added `Meta` ordering by `-played_at`, verbose names, and a meaningful `__str__`.
+- Added `clean()` to validate `correct_answers` <= `total_questions` (if total provided).
+
+### 2. Admin (`backend/api/admin.py`)
+- Registered `GameResult` with admin using `ModelAdmin`:
+	- `list_display`: user, correct_answers, total_questions, time_taken, difficulty, mode, played_at
+	- `list_filter`: difficulty, mode, played_at
+	- `search_fields`: user__username
+	- `ordering`: -played_at
+
+### 3. Serializer (`backend/api/serializers.py`)
+- Added `GameResultSerializer` (ModelSerializer) exposing:
+	- id, user, correct_answers, total_questions, time_taken, difficulty, mode, played_at
+- `user` set to read-only (the view attaches authenticated user on save) — prevents DRF `PrimaryKeyRelatedField` queryset errors and avoids forcing client-provided user IDs.
+- Validation:
+	- `correct_answers` >= 0
+	- `time_taken` >= 0
+	- `correct_answers` <= `total_questions` (if total provided)
+
+### 4. View & Routing (`backend/api/views.py`, `backend/api/urls.py`)
+- Added `GameResultListCreateAPIView` (DRF generics.ListCreateAPIView):
+	- `queryset = GameResult.objects.all()`
+	- `serializer_class = GameResultSerializer`
+	- `permission_classes = [AllowAny]` by default (allows anonymous submissions)
+	- `perform_create()` attaches `request.user` if authenticated, otherwise saves with `user=None`
+- Added `path('games/', GameResultListCreateAPIView.as_view(), name='game-results-listcreate')` under the API routes (`/api/games/`).
+
+### 5. Tests (`backend/api/tests.py`)
+- Added tests covering:
+	- Model creation (ensures fields save and `played_at` exists)
+	- Serializer valid save and invalid cases (negative values)
+	- API GET `/api/games/` returns list
+	- API POST `/api/games/` creates a GameResult entry (anonymous OK)
+- Kept the existing API smoke test for `/api/questions/`.
+
+### 6. Notes about migrations
+- Model addition requires:
+	- `python manage.py makemigrations api`
+	- `python manage.py migrate`
+- Tests will use Django test DB; ensure migrations/DB state is consistent if you run non-test code.
+
+## API Technical Details
+
+### Endpoint
+- GET /api/games/ — list saved game results (returns array of objects)
+- POST /api/games/ — create a new game result
+
+### Accepted POST payload (example)
+```json
+{
+	"user": null,
+	"correct_answers": 8,
+	"total_questions": 10,
+	"time_taken": 36.7,
+	"difficulty": "medium",
+	"mode": "timed"
+}
+```
+
+Notes:
+- `user` is read-only in the serializer by default; if the client includes `user`, it will be ignored. Authenticated requests will have their `user` attached server-side by `perform_create`.
+- On success POST returns HTTP 201 (or 200 in some configurations) with the created object including `played_at`.
+
+### Validation & Permissions
+- Validation enforced by serializer:
+	- `correct_answers` >= 0
+	- `time_taken` >= 0
+	- If `total_questions` provided, `correct_answers` <= `total_questions`
+- Default permissions: AllowAny (anonymous submissions allowed). You can change to `IsAuthenticated` if you want to restrict who can submit.
+
+## Testing Checklist
+- [ ] Run migrations: `python manage.py makemigrations api` and `python manage.py migrate`
+- [ ] Run tests: `python manage.py test api`
+- [ ] Verify GET `/api/games/` returns a list (including entries created during tests)
+- [ ] Verify POST `/api/games/` creates a GameResult (anonymous and authenticated)
+- [ ] Verify serializer rejects negative `correct_answers` and `time_taken`
+- [ ] Verify serializer rejects `correct_answers > total_questions` when `total_questions` present
+- [ ] Check admin UI shows GameResult entries with expected columns and filters
+
+## Future Enhancements
+- Add leaderboard endpoints:
+	- `/api/leaderboard/` with sorting by correct_answers, time_taken (fastest first), or a combined score
+	- endpoints to return leaderboards per difficulty and per time window (daily/weekly/all-time)
+- Add scoring multiplier per difficulty (easy: 1x, medium: 1.5x, hard: 2x)
+- Add user profile statistics (aggregate total plays, average time, best scores)
+- Add pagination and rate-limiting to `/api/games/` if dataset grows
+- Add authentication requirement for high-trust leaderboard submissions (to prevent spoofing)
+- Add admin tools to purge/test data and to seed leaderboard sample entries
+- Add frontend wiring: send POST to `/api/games/` when a timed game completes
+
+## How to run / verify locally
+From repo `backend` directory:
+```bash
+# create or activate venv and install requirements
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# create and apply migrations (if not already done)
+python manage.py makemigrations api
+python manage.py migrate
+
+# run tests for api app
+```
+python manage.py test api
+```
+
+# run server to manually test endpoints
+```
+python manage.py runserver
+```
+# then:
+# GET http://localhost:8000/api/games/
+# POST http://localhost:8000/api/games/ with JSON payload (use curl or Postman)
+```
+
+## Summary
+This branch introduces a persistent `GameResult` model and a simple ListCreate API at `/api/games/`. That captures the essential data points needed for a leaderboard (correct answers, completion time, difficulty, timestamp, and optional user). The endpoint and model are intentionally minimal and flexible so a future leaderboard implementation can aggregate and rank results without breaking changes.
+

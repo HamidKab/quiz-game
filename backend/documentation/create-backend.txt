@@ -1,0 +1,109 @@
+# Create Default Django Backend
+
+**Branch:** `create-backend`  
+**Author:** Obinna Oramalu
+**Date:** November 30, 2025
+
+## Overview
+Implemented a minimal django REST backend that provides a simple api for the frontend. The backend is designed for local development. 
+
+## Primary goals:
+
+Provide endpoints for questions and categories used by the frontend.
+Keep the initial implementation file-backed (JSON) to avoid early DB/schema complexity.
+Offer a clear path to extend with models (e.g., leaderboard/GameResult), authentication, and deployment.
+
+## Changes Made
+
+1. New backend project
+  -   Created a backend/ folder at the repository root that contains:
+    -   A Django project (project name: backend_project — adjust as needed)
+    -   An api Django app that exposes REST endpoints
+
+2. Data files
+  -   Copied frontend JSON assets into a local data folder used by the backend:
+    -   backend/data/questions.json <- copied from source_code/src/assets/questions.json
+    -   backend/data/categories.json <- copied from source_code/src/assets/categories.json
+
+3. Dependencies
+  - Added backend/requirements.txt with the primary packages:
+    - Django
+    - djangorestframework
+    - django-cors-headers
+  -  A .venv/ was used for local development in backend/ (optional; recommended).
+
+4. Settings and middleware
+  - backend/backend_project/settings.py changes:
+    - Added to INSTALLED_APPS:
+      - 'rest_framework'
+      - 'corsheaders'
+      - 'api'
+  - Added CORS middleware:
+    - 'corsheaders.middleware.CorsMiddleware' (placed before CommonMiddleware)
+    - CORS configuration for local frontend:
+      - CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
+    - ALLOWED_HOSTS set for local dev (['localhost', '127.0.0.1'])
+    - SQLite is used as the default development DATABASES backend.
+    - Minimal REST Framework config (JSON renderer) may be present.
+
+5. URL routing and views
+  - Root URLs updated in backend/backend_project/urls.py to include the API:
+    - path('api/', include('api.urls'))
+  - backend/api/urls.py exposes endpoints:
+    - GET  /api/questions/ → returns list of questions (reads backend/data/questions.json)
+    - GET  /api/categories/ → returns list of categories (reads backend/data/categories.json)
+  - Views implemented in backend/api/views.py:
+    - Simple function-based views that read JSON files and return JsonResponse with safe=False for lists.
+
+6. Tests
+  - backend/api/tests.py contains smoke tests using Django TestCase:
+    - Ensures /api/questions/ and /api/categories/ return HTTP 200 and JSON with expected shape.
+  - Running tests locally:
+    - python manage.py test (run from backend/ virtualenv/dir)
+
+7. README + run instructions
+  - A short README (or README section in the repo README.md) documents:
+    - How to create and activate a virtualenv
+    - How to install dependencies (pip install -r requirements.txt)
+    - How to run migrations (if you later add models)
+    - How to run the development server: python manage.py runserver 8000
+    - Example endpoints to check: /api/questions/, /api/categories/
+
+Technical Details
+  Data source: Local JSON files inside backend/data/ for quick iteration and parity with the frontend.
+  API format: Plain JSON arrays/objects as present in the frontend assets. Example:
+    GET /api/questions/ → returns a JSON array of question objects
+    GET /api/categories/ → returns a JSON array of category objects
+  Backend base URL for frontend dev: http://localhost:8000/api/
+  CORS: django-cors-headers configured to allow the frontend at http://localhost:3000.
+  DB: SQLite (default) — currently unused for questions/categories but present for future models/migrations.
+
+How to run (local dev)
+
+1. From repository root:
+```
+cd backend
+python3 -m venv .venv      # if not already created
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+2. Run migrations (required if you later add models):
+```
+python manage.py makemigrations
+python manage.py migrate
+```
+3. Run Tests
+```
+python manage.py test
+```
+4. Start Development Server
+```
+python manage.py runserver 8000
+```
+Verify endpoints:
+- http://127.0.0.1:8000/api/questions/
+- http://127.0.0.1:8000/api/categories/
+
+Next Steps:
+Implement the GameResult model + endpoints and tests (full leaderboard support)
