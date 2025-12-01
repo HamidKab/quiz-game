@@ -1,0 +1,23 @@
+# Create Directory to Store Documentation for New Branches in Backend
+
+**Branch:** `documentation-storage-directory`
+**Author:** Obinna Oramalu
+**Date:** December 1, 2025
+
+##Overview
+Created a directory to store the documentation of all changes made within the backend of this project,
+allowing for clear mapping of what was added and when making it easier for those not working on the
+backend of this project to follow.
+
+##Primary Goals:
+
+Provide greater clarity on the changes being made in the backend and allow for greater cohesion and
+collaboration for this project.
+
+##Changes Made
+
+1. New directory `documentation` containing
+    - `create-backend.txt` (documentation for the `create-backend` branch)
+    - `backend-models.txt` (documentation for the `backend-models` branch)
+    - `documentation.txt`  (documentation for this branch)
+
