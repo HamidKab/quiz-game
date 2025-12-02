@@ -129,6 +129,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
+# If you must allow all origins during dev (less secure)
+# CORS_ALLOW_ALL_ORIGINS = True
+
+# For credentialed requests (cookies/session auth) - enable if you plan to use credentials
+CORS_ALLOW_CREDENTIALS = True
+
+# If using cross-site POSTs with session auth, add the frontend host here for CSRF
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+# REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',

@@ -1,0 +1,137 @@
+# Connect Backend to Frontend (GameResult Integration)
+
+**Branch:** `connect-gameresult-model-to-front-end`  
+**Author:** Obinna  
+**Date:** December 02, 2025
+
+## Overview
+Connected the Next.js frontend to the Django backend to automatically POST game results when a timed-mode quiz is completed. This integration sends correct answers, completion time, difficulty level, and selected categories to the backend for storage. Also extended the GameResult model to support `categories_list` as a JSONField array for improved leaderboard filtering.
+
+## Changes Made
+
+### 1. Frontend Store (`source_code/src/store/useQuestions.js`)
+- Added `startTime` state to track when a quiz begins
+- Added `setStartTime(ts)` action to record quiz start timestamp (milliseconds)
+- Purpose: calculate elapsed time when quiz completes
+
+### 2. Frontend Game Form (`source_code/src/components/Form/NewGameForm.jsx`)
+- Updated `handleSubmit()` to call `setStartTime(Date.now())` when starting a new game
+- Captures the precise moment a quiz begins for accurate time tracking
+
+### 3. Frontend Game Over Component (`source_code/src/components/Play/GameOver.jsx`)
+- Added POST request to backend when timed game completes
+- Computes `time_taken` in seconds: `(Date.now() - startTime) / 1000`
+- Constructs payload with:
+	- `correct_answers`: final score from quiz
+	- `total_questions`: number of questions (null for infinity mode)
+	- `time_taken`: elapsed seconds
+	- `difficulty`: quiz difficulty level
+	- `categories_list`: array of selected category IDs
+	- `mode`: 'timed' or 'practice'
+- Backend URL configurable via `NEXT_PUBLIC_BACKEND_URL` env var:
+	- **Development (no env var):** defaults to `http://localhost:8000`
+	- **Production (with env var):** uses custom URL (e.g., `https://api.example.com`)
+- Includes error handling and console logging for debugging
+
+### 4. Backend Model Update (`backend/api/models.py`)
+- Changed `categories_list` field from CharField to JSONField
+- Now stores an array of category IDs instead of a single string
+- Example: `["history", "science", "entertainment"]`
+- Allows more flexible filtering and aggregation for leaderboards
+
+### 5. Backend Serializer Update (`backend/api/serializers.py`)
+- Added `validate_categories_list()` to ensure field is an array
+- Updated field list to include `categories_list`
+- Validates that incoming data is a list; rejects non-array values
+
+### 6. Backend Tests (`backend/api/tests.py`)
+- Updated `GameResultModelTest` to use array: `categories_list=['science', 'history']`
+- Updated `GameResultSerializerTest` to validate array format
+- Updated `GameResultAPITest` GET/POST tests with array payloads
+- All tests now verify categories are stored and retrieved correctly
+
+### 7. Backend Admin (`backend/api/admin.py`)
+- Added `categories_list` to `list_display` for admin UI visibility
+- Admins can now see selected categories for each game result entry
+
+## API Technical Details
+
+### Endpoint
+- POST /api/games/ — create a new game result from frontend
+
+### Accepted POST payload (example)
+```json
+{
+	"correct_answers": 8,
+	"total_questions": 10,
+	"time_taken": 36.7,
+	"difficulty": "medium",
+	"categories_list": ["history", "science"],
+	"mode": "timed"
+}
+```
+
+Notes:
+- `categories_list` is now a JSON array (not a string)
+- `user` is omitted from frontend POST (backend attaches via `perform_create()`)
+- On success returns HTTP 201 with created object (includes `id` and `played_at`)
+
+### How to Deploy
+
+**Local Development:**
+```bash
+# No env var needed — frontend defaults to http://localhost:8000
+
+# Terminal 1: start Django backend
+cd backend
+python manage.py makemigrations api
+python manage.py migrate
+python manage.py runserver 8000
+
+# Terminal 2: start Next.js frontend
+cd source_code
+npm run dev
+```
+
+**Production Deployment:**
+```bash
+# Set env var before building frontend
+export NEXT_PUBLIC_BACKEND_URL=https://api.example.com
+npm run build
+npm start
+
+# Django backend deployed separately (e.g., https://api.example.com)
+```
+
+## Testing Checklist
+- [ ] Run migrations: `python manage.py makemigrations api` && `python manage.py migrate`
+- [ ] Run tests: `python manage.py test api` (should all pass)
+- [ ] Start Django backend on localhost:8000
+- [ ] Start Next.js frontend on localhost:3000
+- [ ] Play a timed-mode game to completion
+- [ ] Check browser console for "GameResult saved" message
+- [ ] Verify in Django admin (`/admin/api/gameresult/`) that result appears with:
+	- Correct score
+	- Correct time_taken (roughly matches quiz duration)
+	- Categories array populated
+	- Difficulty and mode correct
+- [ ] Test with different category combinations and difficulties
+- [ ] Verify GET `/api/games/` returns all saved results
+
+## Known Limitations & Future Work
+- Frontend only POSTs on timed-mode completion (not practice mode) — intentional to focus leaderboard on timed results
+- Categories are stored as array; leaderboard queries can filter/aggregate by category
+- No user authentication yet — all submissions are anonymous (by design for initial MVP)
+- No CORS configuration applied to backend yet (works locally; production needs django-cors-headers or proxy setup)
+
+## How CORS Works (For Production)
+If frontend and backend are on different origins (e.g., app.example.com vs api.example.com):
+1. Install `django-cors-headers` in backend
+2. Add to `INSTALLED_APPS` and `MIDDLEWARE`
+3. Configure `CORS_ALLOWED_ORIGINS` to include frontend URL
+4. Frontend fetch() will include `credentials: 'include'` for authenticated requests
+
+Example setup provided in backend troubleshooting if needed.
+
+## Summary
+This branch successfully connects the Next.js frontend to the Django backend, enabling automatic capture of game results whenever a timed quiz completes. The frontend sends all relevant game data (score, time, difficulty, categories) as a JSON array, which the backend persists in the database via the `/api/games/` endpoint. This foundation enables future leaderboard features that can rank players by score, speed, or category performance without requiring any further backend schema changes. 

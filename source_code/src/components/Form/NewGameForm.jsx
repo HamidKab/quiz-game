@@ -9,7 +9,7 @@ import categoriesJSON from '@/assets/categories.json'
 import { useBoundStore } from '@/store/useBoundStore'
 
 export default function NewGameForm () {
-	const { getQuestions, cleanQuestions, queries, setQueries, cleanWildCards } = useBoundStore(state => state)
+	const { getQuestions, cleanQuestions, queries, setQueries, cleanWildCards, setStartTime } = useBoundStore(state => state)
 	const [nowQueries, setNowQueries] = useState(queries)
 	const router = useRouter()
 	const dialog = useRef(null)
@@ -53,6 +53,9 @@ export default function NewGameForm () {
 
 		const cate = nowQueries.categories.map(cat => categoriesJSON.find(c => c.id === cat).name)
 		if (router.pathname === '/play') getQuestions(cate, nowQueries.infinitymode ? 5 : nowQueries.questions, nowQueries.infinitymode, nowQueries.difficulty)
+
+		// record quiz start time (used to compute time_taken at completion)
+		setStartTime(Date.now())
 
 		closeDialog()
 	}

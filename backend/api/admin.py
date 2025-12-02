@@ -12,6 +12,7 @@ class GameResultAdmin(admin.ModelAdmin):
         'time_taken',
         'difficulty',
         'mode',
+        'categories_list',
         'played_at',
     )
     list_filter = ('difficulty', 'mode', 'played_at')
