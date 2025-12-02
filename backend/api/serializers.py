@@ -19,9 +19,16 @@ class GameResultSerializer(serializers.ModelSerializer):
             "time_taken",
             "difficulty",
             "mode",
+            "categories_list",
             "played_at",
         ]
         read_only_fields = ["id", "played_at"]
+
+    def validate_categories_list(self, value):
+        """Ensure categories_list is a list (array)."""
+        if value is not None and not isinstance(value, list):
+            raise serializers.ValidationError("categories_list must be an array of category IDs")
+        return value
 
     def validate_correct_answers(self, value):
         if value < 0:

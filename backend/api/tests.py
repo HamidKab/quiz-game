@@ -26,6 +26,7 @@ class GameResultModelTest(TestCase):
             total_questions=10,
             time_taken=30.5,
             difficulty=GameResult.DIFFICULTY_MEDIUM,
+            categories_list=['science', 'history'],
             mode=GameResult.MODE_TIMED,
         )
         self.assertEqual(gr.correct_answers, 5)
@@ -41,6 +42,7 @@ class GameResultSerializerTest(TestCase):
             "total_questions": 10,
             "time_taken": 42.0,
             "difficulty": GameResult.DIFFICULTY_MEDIUM,
+            "categories_list": ['history', 'science'],
             "mode": GameResult.MODE_TIMED,
         }
         serializer = GameResultSerializer(data=data)
@@ -68,6 +70,7 @@ class GameResultAPITest(TestCase):
             total_questions=5,
             time_taken=20.0,
             difficulty=GameResult.DIFFICULTY_EASY,
+            categories_list=['entertainment'],
             mode=GameResult.MODE_TIMED,
         )
         resp = self.client.get('/api/games/')
@@ -83,6 +86,7 @@ class GameResultAPITest(TestCase):
             "total_questions": 5,
             "time_taken": 33.0,
             "difficulty": GameResult.DIFFICULTY_EASY,
+            "categories_list": ['sports', 'general'],
             "mode": GameResult.MODE_TIMED,
         }
         resp = self.client.post('/api/games/', data=json.dumps(payload), content_type='application/json')

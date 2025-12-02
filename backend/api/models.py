@@ -18,6 +18,13 @@ class GameResult(models.Model):
         (MODE_PRACTICE, 'Practice'),
         (MODE_TIMED, 'Timed'),
     ]
+    CATEGORIES = [
+        ('general', 'General Knowledge'),
+        ('science', 'Science'),
+        ('history', 'History'),
+        ('sports', 'Sports'),
+        ('entertainment', 'Entertainment'),
+    ]
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -50,6 +57,11 @@ class GameResult(models.Model):
         choices=MODE_CHOICES,
         default=MODE_PRACTICE,
         help_text='Indidcates whether the game was played in practice or timed mode'
+        )
+    categories_list = models.JSONField(
+        default=list,
+        blank=True,
+        help_text='List of category IDs played in the game session'
         )
     played_at = models.DateTimeField(auto_now_add=True)
 
