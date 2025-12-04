@@ -92,3 +92,74 @@ class GameResultAPITest(TestCase):
         resp = self.client.post('/api/games/', data=json.dumps(payload), content_type='application/json')
         self.assertIn(resp.status_code, (200, 201))
         self.assertEqual(GameResult.objects.count(), 1)
+
+class LeaderboardAPITest(TestCase):
+    def test_leaderboard_easy(self):
+        # Create some GameResult entries
+        GameResult.objects.create(
+            correct_answers=8,
+            total_questions=10,
+            time_taken=25.0,
+            difficulty=GameResult.DIFFICULTY_EASY,
+            categories_list=['science'],
+            mode=GameResult.MODE_TIMED,
+        )
+        GameResult.objects.create(
+            correct_answers=9,
+            total_questions=10,
+            time_taken=30.0,
+            difficulty=GameResult.DIFFICULTY_EASY,
+            categories_list=['history'],
+            mode=GameResult.MODE_TIMED,
+        )
+        resp = self.client.get('/api/leaderboard/easy/')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIsInstance(data, list)
+        self.assertTrue(len(data) >= 1)
+    def test_leaderboard_medium(self): 
+        # Create some GameResult entries
+        GameResult.objects.create(
+            correct_answers=7,
+            total_questions=10,
+            time_taken=28.0,
+            difficulty=GameResult.DIFFICULTY_MEDIUM,
+            categories_list=['science'],
+            mode=GameResult.MODE_TIMED,
+        )
+        GameResult.objects.create(
+            correct_answers=6,
+            total_questions=10,
+            time_taken=22.0,
+            difficulty=GameResult.DIFFICULTY_MEDIUM,
+            categories_list=['history'],
+            mode=GameResult.MODE_TIMED,
+        )
+        resp = self.client.get('/api/leaderboard/medium/')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIsInstance(data, list)
+        self.assertTrue(len(data) >= 1)
+    def test_leaderboard_hard(self):
+        # Create some GameResult entries
+        GameResult.objects.create(
+            correct_answers=5,
+            total_questions=10,
+            time_taken=35.0,
+            difficulty=GameResult.DIFFICULTY_HARD,
+            categories_list=['science'],
+            mode=GameResult.MODE_TIMED,
+        )
+        GameResult.objects.create(
+            correct_answers=4,
+            total_questions=10,
+            time_taken=40.0,
+            difficulty=GameResult.DIFFICULTY_HARD,
+            categories_list=['history'],
+            mode=GameResult.MODE_TIMED,
+        )
+        resp = self.client.get('/api/leaderboard/hard/')
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIsInstance(data, list)
+        self.assertTrue(len(data) >= 1)
