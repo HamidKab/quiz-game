@@ -78,3 +78,30 @@ class GameResult(models.Model):
         from django.core.exceptions import ValidationError
         if self.total_questions is not None and self.correct_answers > self.total_questions:
             raise ValidationError('Correct answers cannot exceed total questions.')
+        
+class LeaderboardEntry(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='leaderboard_entries',
+        help_text='Optional link to the player (nullable to allow anonymous plays)'
+    )
+    correct_to_total_ratio = models.FloatField(
+        default=0.0,
+        help_text='Ratio of correct answers to total questions answered by the player'
+    )
+    time_taken = models.FloatField(
+        validators=[MinValueValidator(0.0)],
+        help_text='Total time taken across all games played by the player in seconds'
+    )
+
+    class Meta:
+        ordering = ['-correct_to_total_ratio', 'time_taken']
+        verbose_name = 'Leaderboard Entry'
+        verbose_name_plural = 'Leaderboard Entries'
+
+    def __str__(self):
+        user_repr = self.user.username if self.user else "Anonymous"
+        return f"LeaderboardEntry({user_repr}, ratio={self.correct_to_total_ratio:.3f}, time={self.time_taken})"

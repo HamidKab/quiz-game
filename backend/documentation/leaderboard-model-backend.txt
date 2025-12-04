@@ -1,0 +1,202 @@
+# LeaderBoard Backend
+
+**Branch:** `leaderboard-model-backend`  
+**Author:** Obinna  
+**Date:** December 03, 2025
+
+## Overview
+Implemented a complete leaderboard system that ranks game results by accuracy (correct-to-total-answers ratio) and then by time taken (fastest first). Created dedicated leaderboard API endpoints for each difficulty level (easy, medium, hard) that return the top 10 players ranked by these criteria. Also added a `LeaderboardEntry` model to support future denormalized leaderboard aggregations, fixed reverse accessor clashes, and created specialized serializers for leaderboard data.
+
+## Changes Made
+
+### 1. Models (`backend/api/models.py`)
+
+#### LeaderboardEntry Model (New)
+- Added `LeaderboardEntry` model for potential future use (denormalized leaderboard aggregation):
+	- `user` (FK to `settings.AUTH_USER_MODEL`, null=True, blank=True, related_name='leaderboard_entries')
+		- **Note:** Changed `related_name` from `game_results` (clash) → `leaderboard_entries` to avoid reverse accessor collision with `GameResult.user`
+	- `correct_to_total_ratio` (FloatField, default=0.0)
+		- Stores aggregated accuracy ratio for a player across games
+	- `time_taken` (FloatField, MinValueValidator(0.0))
+		- Stores total or average time for aggregated results
+- Added `Meta` ordering by `-correct_to_total_ratio` (descending) then `time_taken` (ascending)
+- Added safe `__str__` that handles nullable user and references only actual fields
+
+### 2. Serializers (`backend/api/serializers.py`)
+
+#### LeaderboardEntrySerializer (New)
+- Minimal serializer for the `LeaderboardEntry` model (if used for denormalized data)
+- Fields: `id`, `user`, `correct_to_total_ratio`, `time_taken`
+- All fields read-only (except user which is also read-only)
+- `to_representation()` rounds `correct_to_total_ratio` to 4 decimal places for frontend readability
+
+#### LeaderboardGameResultSerializer (New)
+- Serializer for **annotated** `GameResult` queryset (the actual leaderboard endpoint data)
+- Extends `GameResult` serialization with a computed `correct_to_total_ratio` annotation
+- Fields: `id`, `user`, `correct_answers`, `total_questions`, `correct_to_total_ratio`, `time_taken`, `difficulty`, `mode`, `categories_list`, `played_at`
+- `correct_to_total_ratio` declared as read-only (computed by queryset annotation, not stored)
+- `to_representation()` rounds the ratio to 4 decimal places for display
+
+### 3. Views (`backend/api/views.py`)
+
+#### LeaderboardListEasyAPIView (New)
+- Class-based view extending `generics.ListAPIView` (read-only)
+- **Queryset Logic:**
+	- Filters `GameResult` by `difficulty='easy'`
+	- **Annotates** each row with computed `correct_to_total_ratio`:
+		- Formula: `correct_answers * 1.0 / total_questions`
+		- **Safety:** Uses `Case/When` to avoid division-by-zero:
+			- If `total_questions > 0`, compute ratio
+			- Else, default to `0.0`
+	- Orders by `-correct_to_total_ratio` (highest accuracy first), then `time_taken` ascending (fastest first)
+	- Limits results to top 10 entries
+- Uses `LeaderboardGameResultSerializer` for serialization
+- Permissions: `AllowAny` (public read-only access)
+
+#### LeaderboardListMediumAPIView (New)
+- Identical to Easy view, but filters by `difficulty='medium'`
+
+#### LeaderboardListHardAPIView (New)
+- Identical to Easy view, but filters by `difficulty='hard'`
+
+**Key Design Notes:**
+- Leaderboard views use **queryset annotation** (on-the-fly calculation) rather than maintaining a separate denormalized table
+- This means leaderboards always reflect current game results without requiring background jobs
+- Trade-off: calculation happens at query time; for large datasets, consider materializing `LeaderboardEntry` via periodic aggregation
+
+### 4. URLs (`backend/api/urls.py`)
+- Added three new routes:
+	- `path("games/leaderboard/easy/", views.LeaderboardListEasyAPIView.as_view(), name="leaderboard-easy")`
+	- `path("games/leaderboard/medium/", views.LeaderboardListMediumAPIView.as_view(), name="leaderboard-medium")`
+	- `path("games/leaderboard/hard/", views.LeaderboardListHardAPIView.as_view(), name="leaderboard-hard")`
+
+### 5. Admin (`backend/api/admin.py`)
+- No changes required; existing `GameResultAdmin` already shows results; `LeaderboardEntryAdmin` registered for future use if needed
+
+### 6. Tests (`backend/api/tests.py`)
+- Existing `GameResultModelTest`, `GameResultSerializerTest`, and `GameResultAPITest` remain unchanged
+- No new leaderboard tests added in this iteration (recommended for next phase)
+
+## API Technical Details
+
+### Leaderboard Endpoints
+
+All leaderboard endpoints are **read-only** (GET only) and return the top 10 results.
+
+#### GET /api/games/leaderboard/easy/
+- Returns top 10 game results for difficulty='easy'
+- **Order:** Highest accuracy first, then fastest time (ascending)
+- **Response Code:** 200 OK
+
+#### GET /api/games/leaderboard/medium/
+- Returns top 10 game results for difficulty='medium'
+- **Order:** Highest accuracy first, then fastest time (ascending)
+- **Response Code:** 200 OK
+
+#### GET /api/games/leaderboard/hard/
+- Returns top 10 game results for difficulty='hard'
+- **Order:** Highest accuracy first, then fastest time (ascending)
+- **Response Code:** 200 OK
+
+### Response Payload Example
+```json
+[
+  {
+    "id": 42,
+    "user": null,
+    "correct_answers": 10,
+    "total_questions": 10,
+    "correct_to_total_ratio": 1.0,
+    "time_taken": 23.5,
+    "difficulty": "easy",
+    "mode": "timed",
+    "categories_list": ["history", "science"],
+    "played_at": "2025-12-03T14:30:00Z"
+  },
+  {
+    "id": 41,
+    "user": null,
+    "correct_answers": 9,
+    "total_questions": 10,
+    "correct_to_total_ratio": 0.9,
+    "time_taken": 31.2,
+    "difficulty": "easy",
+    "mode": "timed",
+    "categories_list": ["sports"],
+    "played_at": "2025-12-03T14:25:00Z"
+  }
+]
+```
+
+### Ranking Logic
+
+**Primary Sort:** `correct_to_total_ratio` (descending, highest first)
+- Calculated as: `correct_answers / total_questions`
+- Ranges 0.0 (all wrong) to 1.0 (all correct)
+- Example: 8 correct out of 10 = ratio 0.8
+
+**Secondary Sort (Tie-Breaker):** `time_taken` (ascending, fastest first)
+- If two players have identical accuracy, faster player ranks higher
+- Time in seconds; lower is better
+
+### Testing Checklist
+- [ ] Run migrations: `python manage.py makemigrations api && python manage.py migrate`
+- [ ] Run tests: `python manage.py test api`
+- [ ] Verify leaderboard endpoints return HTTP 200
+- [ ] Verify results are ordered by accuracy (descending), then time (ascending)
+- [ ] Verify `correct_to_total_ratio` is computed correctly (0.0–1.0)
+- [ ] Test edge case: create game with `total_questions=0` or null; verify ratio defaults to 0.0
+- [ ] Check admin UI for `LeaderboardEntry` (if needed for denormalization)
+- [ ] Load-test with 100+ game results; verify query performance acceptable
+
+## How to run / verify locally
+From repo `backend` directory:
+```bash
+# create or activate venv and install requirements
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# create and apply migrations (if not already done)
+python manage.py makemigrations api
+python manage.py migrate
+
+# run tests for api app
+```
+python manage.py test api
+```
+
+# run server to manually test endpoints
+```
+python manage.py runserver
+```
+# then:
+# GET http://localhost:8000/api/games/leaderboard/easy
+# GET http://localhost:8000/api/games/leaderboard/medium
+# GET http://localhost:8000/api/games/leaderboard/hard
+```
+
+## Summary
+This branch introduces a persistent `GameResult` model and a simple ListCreate API at `/api/games/`. That captures the essential data points needed for a leaderboard (correct answers, completion time, difficulty, timestamp, and optional user). The endpoint and model are intentionally minimal and flexible so a future leaderboard implementation can aggregate and rank results without breaking changes.
+
+
+
+## Frontend Integration (Future Phase)
+
+The leaderboard endpoints are ready for frontend consumption:
+- Fetch from `/api/games/leaderboard/easy/` (similar for medium/hard) after quiz completion
+- Display top 10 with user rank, accuracy percentage, time, and badges/icons per difficulty
+- Optional: Implement personal best tracking by comparing user's result to their prior entries
+
+## Summary
+
+This branch implements a production-ready leaderboard system by:
+- **Adding `LeaderboardEntry` model** for future denormalized aggregations (optional for now)
+- **Creating three difficulty-specific leaderboard views** that query `GameResult` and annotate with accuracy
+- **Ranking by accuracy first, time second** to reward both correctness and speed
+- **Handling edge cases** (division by zero, null totals) via Case/When expressions
+- **Providing clean serialization** via `LeaderboardGameResultSerializer` with rounded ratios
+- **Supporting all difficulty levels** with dedicated `/api/leaderboard/{easy|medium|hard}/` endpoints
+
+The system is ready for frontend consumption and can be extended with pagination, category filters, time windows, and user-specific queries without schema changes.
+
