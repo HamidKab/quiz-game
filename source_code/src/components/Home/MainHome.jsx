@@ -1,6 +1,8 @@
 import categories from '@/assets/categories.json'
 import PageFooter from '../PageFooter'
 import playSound from '@/helpers/playSound'
+import { useEffect, useState } from 'react'
+import { signIn, signOut, onAuthChange, db, collection, addDoc, doc, getDoc, setDoc } from '@/helpers/fireBase'
 
 export default function MainHome () {
 	function handleTitleHover (e) {
@@ -15,6 +17,13 @@ export default function MainHome () {
 		playSound('pop')
 		document.getElementById('newGameDialog')?.showModal()
 	}
+
+	const [user, setUser] = useState(null)
+
+	useEffect(() => {
+		const unsub = onAuthChange(u => setUser(u))
+		return () => unsub && typeof unsub === 'function' ? unsub() : undefined
+	}, [])
 
 	return (
 		<main className='mainHome max-w-6xl relative  mx-auto w-full min-h-[25rem] flex gap-4 flex-col justify-between items-center px-5 md:px-10 py-20 lg:col-start-2 lg:row-start-1 lg:row-end-3 text-center text-white'>
@@ -31,9 +40,22 @@ export default function MainHome () {
 					Play an infinite number of possible questions!
 				</p>
 			</article>
-			<button onClick={handlePlay} id='play' href="play" className='btn-primary uppercase px-6 py-4 text-lg max-w-md w-full mx-auto mt-10' >
-				Start Game
-			</button>
+			<div className='w-full max-w-md mx-auto mt-8'>
+				<div className='flex flex-col sm:flex-row gap-3 justify-center items-center'>
+					<button onClick={handlePlay} id='play' className='btn-primary uppercase px-4 py-3 text-base w-full sm:w-auto'>
+						Start Game
+					</button>
+					{user ? (
+						<button className='btn-primary uppercase px-4 py-3 text-base w-full sm:w-auto' onClick={() => signOut()}>
+							Sign out
+						</button>
+					) : (
+						<button className='btn-primary uppercase px-4 py-3 text-base w-full sm:w-auto' onClick={() => signIn()}>
+							Sign in with Google
+						</button>
+					)}
+				</div>
+			</div>
 			<PageFooter />
 		</main >
 	)
