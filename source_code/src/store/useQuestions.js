@@ -2,6 +2,7 @@ import getQuestions from '@/helpers/getQuestions'
 
 export const useQuestionsStore = (set, get) => ({
 	questions: [],
+	startTime: null,
 	loading: false,
 	loadingInfinity: false,
 	error: [false, ''],
@@ -15,6 +16,9 @@ export const useQuestionsStore = (set, get) => ({
 			.catch(err => set({ error: [true, err] }))
 			.finally(() => infinity ? set({ loadingInfinity: false }) : set({ loading: false }))
 	},
+
+	setStartTime: (ts) => set({ startTime: ts }),
+
 	setCurrentQuestion: (number) => set({ currentQuestion: number }),
 	setUserAnswer: (question, answer) => {
 		if (get().queries.infinitymode) return

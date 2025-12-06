@@ -1,41 +1,41 @@
 [
 	{
-		"id": "aa",
+		"id": "history",
 		"name": "History",
 		"color": "#e6c642"
 	},
 	{
-		"id": "ab",
+		"id": "entertainment",
 		"name": "Entertainment",
 		"color": "#f94e4e"
 	},
 	{
-		"id": "ac",
+		"id": "technology",
 		"name": "Technology",
 		"color": "#685af5"
 	},
 	{
-		"id": "ad",
+		"id": "geography",
 		"name": "Geography",
 		"color": "#3ce956"
 	},
 	{
-		"id": "ae",
+		"id": "art",
 		"name": "Art",
 		"color": "#307de7"
 	},
 	{
-		"id": "af",
+		"id": "space",
 		"name": "Space",
 		"color": "#a656fd"
 	},
 	{
-		"id": "ah",
+		"id": "science",
 		"name": "Science",
 		"color": "#e857ed"
 	},
 	{
-		"id": "ag",
+		"id": "general",
 		"name": "General culture",
 		"color": "#56cfef"
 	}
