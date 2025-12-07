@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { AiFillCloseCircle, AiFillCheckCircle } from 'react-icons/ai'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { IoCloseSharp } from 'react-icons/io5'
 import { BiArrowBack } from 'react-icons/bi'
 import trophyIcon from '@/assets/trophy.svg'
@@ -22,6 +22,10 @@ const canvasStyles = {
 }
 
 export default function GameOver () {
+	const [playerName, setPlayerName] = useState("")
+	const [submitted, setSubmitted] = useState(false)
+	const [inputValue, setInputValue] = useState("")
+	const [placeholder, setPlaceholder] = useState("Enter your name (optional)")
 	const { queries, score, win } = useBoundStore(state => state)
 	const { startTime } = useBoundStore(state => state)
 	const refAnimationInstance = useRef(null)
@@ -74,7 +78,6 @@ export default function GameOver () {
 			playSound('win', 0.2)
 		}
 
-		// When a timed game finishes (win is set) send a GameResult to backend
 		if (win !== undefined && queries.timemode) {
 			// compute time_taken in seconds from recorded startTime
 			let timeTaken = null
@@ -88,7 +91,8 @@ export default function GameOver () {
 				time_taken: timeTaken,
 				difficulty: queries.difficulty || 'medium',
 				categories_list: queries.categories || [],
-				mode: queries.timemode ? 'timed' : 'practice'
+				mode: queries.timemode ? 'timed' : 'practice',
+				player_name: playerName || undefined
 			}
 
 			// Send to backend — default to localhost:8000 for development, for production an env variable NEXT_PUBLIC_BACKEND_URL will have to be set pointing to the production backend url
@@ -112,6 +116,24 @@ export default function GameOver () {
 		}
 	}, [win])
 
+	//pplaceholder message
+	function placeholderMessage() {
+		if (win === true) {
+			return `Good job ${inputValue}!`
+		}
+		else {
+			return `Nice try ${inputValue}!`
+		}
+	}
+	//submit function for player name
+	function handleSubmit(e) {
+		e.preventDefault()
+		if (!inputValue.trim()) return
+		setPlayerName(inputValue)
+		setPlaceholder(placeholderMessage())
+		setInputValue("")
+		setSubmitted(true)
+	}
 	function closeDialog () {
 		playSound('pop', 0.2)
 		document.getElementById('gameoverdialog').close()
@@ -153,6 +175,21 @@ export default function GameOver () {
 					<p className='text-center mb-3 whitespace-pre-line'>
 						{finalText()}
 					</p>
+					<form onSubmit={handleSubmit} className='flex flex-col items-center w-full'>
+						<div className='w-full max-w-xs flex gap-2'>
+							<input
+								type='text'
+								className='mb-3 px-3 py-2 border border-gray-300 rounded-md w-full text-center'
+								placeholder={placeholder}
+								value={inputValue}
+								onChange={(e) => setInputValue(e.target.value)}
+								onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e) }}
+							/>
+							<button type='submit' className='mb-3 px-4 py-2 bg-green-500 text-white rounded-md hover:opacity-90'>
+								Submit
+							</button>
+						</div>
+					</form>
 					<div className='flex gap-6 items-center'>
 						<Link href="/" className='px-5 md:px-10 hover:opacity-75 bg-slate-200 py-3 rounded-md transition-colors'>
 							<BiArrowBack color='#0f172a' className='text-xl mr-1 inline-block' title='' />
