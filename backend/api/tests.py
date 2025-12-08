@@ -28,9 +28,11 @@ class GameResultModelTest(TestCase):
             difficulty=GameResult.DIFFICULTY_MEDIUM,
             categories_list=['science', 'history'],
             mode=GameResult.MODE_TIMED,
+            player_name='TestPlayer',
         )
         self.assertEqual(gr.correct_answers, 5)
         self.assertEqual(gr.user.username, 'tester')
+        self.assertEqual(gr.player_name, 'TestPlayer')
         self.assertTrue(hasattr(gr, 'played_at'))
 
 
@@ -44,11 +46,13 @@ class GameResultSerializerTest(TestCase):
             "difficulty": GameResult.DIFFICULTY_MEDIUM,
             "categories_list": ['history', 'science'],
             "mode": GameResult.MODE_TIMED,
+            "player_name": "SerializerTestPlayer",
         }
         serializer = GameResultSerializer(data=data)
         self.assertTrue(serializer.is_valid(), msg=serializer.errors)
         obj = serializer.save()
         self.assertEqual(obj.correct_answers, 7)
+        self.assertEqual(obj.player_name, "SerializerTestPlayer")
 
     def test_serializer_invalid_negative_values(self):
         data = {
@@ -88,10 +92,13 @@ class GameResultAPITest(TestCase):
             "difficulty": GameResult.DIFFICULTY_EASY,
             "categories_list": ['sports', 'general'],
             "mode": GameResult.MODE_TIMED,
+            "player_name": "APITestPlayer",
         }
         resp = self.client.post('/api/games/', data=json.dumps(payload), content_type='application/json')
         self.assertIn(resp.status_code, (200, 201))
         self.assertEqual(GameResult.objects.count(), 1)
+        result = GameResult.objects.first()
+        self.assertEqual(result.player_name, "APITestPlayer")
 
 class LeaderboardAPITest(TestCase):
     def test_leaderboard_easy(self):
@@ -103,6 +110,7 @@ class LeaderboardAPITest(TestCase):
             difficulty=GameResult.DIFFICULTY_EASY,
             categories_list=['science'],
             mode=GameResult.MODE_TIMED,
+            player_name='Player1',
         )
         GameResult.objects.create(
             correct_answers=9,
@@ -111,6 +119,7 @@ class LeaderboardAPITest(TestCase):
             difficulty=GameResult.DIFFICULTY_EASY,
             categories_list=['history'],
             mode=GameResult.MODE_TIMED,
+            player_name='Player2',
         )
         resp = self.client.get('/api/leaderboard/easy/')
         self.assertEqual(resp.status_code, 200)
@@ -126,6 +135,7 @@ class LeaderboardAPITest(TestCase):
             difficulty=GameResult.DIFFICULTY_MEDIUM,
             categories_list=['science'],
             mode=GameResult.MODE_TIMED,
+            player_name='Player3',
         )
         GameResult.objects.create(
             correct_answers=6,
@@ -134,6 +144,7 @@ class LeaderboardAPITest(TestCase):
             difficulty=GameResult.DIFFICULTY_MEDIUM,
             categories_list=['history'],
             mode=GameResult.MODE_TIMED,
+            player_name='Player4',
         )
         resp = self.client.get('/api/leaderboard/medium/')
         self.assertEqual(resp.status_code, 200)
@@ -149,6 +160,7 @@ class LeaderboardAPITest(TestCase):
             difficulty=GameResult.DIFFICULTY_HARD,
             categories_list=['science'],
             mode=GameResult.MODE_TIMED,
+            player_name='Player5',
         )
         GameResult.objects.create(
             correct_answers=4,
@@ -157,6 +169,7 @@ class LeaderboardAPITest(TestCase):
             difficulty=GameResult.DIFFICULTY_HARD,
             categories_list=['history'],
             mode=GameResult.MODE_TIMED,
+            player_name='Player6',
         )
         resp = self.client.get('/api/leaderboard/hard/')
         self.assertEqual(resp.status_code, 200)

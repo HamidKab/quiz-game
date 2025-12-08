@@ -57,7 +57,7 @@ export default function Leaderboard () {
                             {performances.map((perf, idx) => (
                                 <tr key={perf.id || idx} className={idx % 2 === 0 ? 'bg-gray-100' : 'bg-white'}>
                                     <td className='border border-gray-300 px-4 py-2 font-bold text-blue-600'>{idx + 1}</td>
-                                    <td className='border border-gray-300 px-4 py-2 text-blue-600'>{perf.display_name || 'Anonymous'}</td>
+                                    <td className='border border-gray-300 px-4 py-2 text-blue-600'>{perf.player_name || 'Anonymous'}</td>
                                     <td className='border border-gray-300 px-4 py-2 text-center text-blue-600'>{perf.correct_to_total_ratio * 100}%</td>
                                     <td className='border border-gray-300 px-4 py-2 text-center text-blue-600'>{perf.time_taken ? perf.time_taken.toFixed(2) : 'N/A'}</td>
                                     <td className='border border-gray-300 px-4 py-2 capitalize text-blue-600'>{perf.difficulty || 'N/A'}</td>
