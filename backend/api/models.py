@@ -85,16 +85,6 @@ class GameResult(models.Model):
             raise ValidationError('Correct answers cannot exceed total questions.')
         
 class LeaderboardEntry(models.Model):
-    DIFFICULTY_EASY = "easy"
-    DIFFICULTY_MEDIUM = "medium"
-    DIFFICULTY_HARD = "hard"
-
-    DIFFICULTY_CHOICES = [
-        (DIFFICULTY_EASY, "Easy"),
-        (DIFFICULTY_MEDIUM, "Medium"),
-        (DIFFICULTY_HARD, "Hard"),
-    ]
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -102,12 +92,6 @@ class LeaderboardEntry(models.Model):
         blank=True,
         related_name='leaderboard_entries',
         help_text='Optional link to the player (nullable to allow anonymous plays)'
-    )
-    display_name = models.CharField(
-        max_length=50,
-        null=True,
-        blank=True,
-        help_text="Name the player entered on the leaderboard"
     )
     correct_to_total_ratio = models.FloatField(
         default=0.0,
@@ -119,8 +103,13 @@ class LeaderboardEntry(models.Model):
     )
     difficulty = models.CharField(
         max_length=10,
-        choices=DIFFICULTY_CHOICES,
-        default=DIFFICULTY_EASY,
+        choices=GameResult.DIFFICULTY_CHOICES,
+        default=GameResult.DIFFICULTY_EASY,
+    )
+    player_name = models.CharField(
+        max_length=100, 
+        blank=True, null=True, 
+        help_text='Optional player name for anonymous users'
     )
 
 

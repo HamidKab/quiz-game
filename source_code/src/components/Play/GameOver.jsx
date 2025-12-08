@@ -21,6 +21,8 @@ const canvasStyles = {
 	zIndex: 100
 }
 
+let timeTaken = null // to hold time taken value for submission
+
 export default function GameOver () {
 	const [playerName, setPlayerName] = useState("")
 	const [submitted, setSubmitted] = useState(false)
@@ -80,42 +82,12 @@ export default function GameOver () {
 
 		if (win !== undefined && queries.timemode) {
 			// compute time_taken in seconds from recorded startTime
-			let timeTaken = null
 			if (startTime) {
 				timeTaken = (Date.now() - startTime) / 1000
 			}
 
 			console.log("difficulty", queries.difficulty)
 			console.log("timeTaken", timeTaken)
-
-			const payload = {
-				correct_answers: score || 0,
-				total_questions: queries.infinitymode ? null : Number(queries.questions) || null,
-				time_taken: timeTaken,
-				difficulty: queries.difficulty || 'medium',
-				categories_list: queries.categories || [],
-				mode: queries.timemode ? 'timed' : 'practice',
-				player_name: playerName || undefined
-			}
-
-			// Send to backend — default to localhost:8000 for development, for production an env variable NEXT_PUBLIC_BACKEND_URL will have to be set pointing to the production backend url
-			const base = (typeof window !== 'undefined' && process?.env?.NEXT_PUBLIC_BACKEND_URL) 
-				? process.env.NEXT_PUBLIC_BACKEND_URL 
-				: 'http://localhost:8000'
-			const url = `${base}/api/games/`
-			fetch(url, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payload)
-			}).then(res => {
-				if (!res.ok) return res.text().then(t => Promise.reject(new Error(t || res.statusText)))
-				return res.json().catch(() => null)
-			}).then(data => {
-				console.debug('Game data saved', data)
-			}).catch(err => {
-				// fail silently for now; could show a toast or retry logic
-				console.error('Failed to save game data', err)
-			})
 		}
 	}, [win])
 
@@ -134,11 +106,6 @@ export default function GameOver () {
 		const submittedName = inputValue.trim();
 		if (!submittedName) return;
 
-		let timeTaken = null
-			if (startTime) {
-				timeTaken = (Date.now() - startTime) / 1000
-			}
-			
 		// existing UI updates
 		setPlayerName(submittedName);
 		setPlaceholder(placeholderMessage());   // or placeholderMessage(submittedName) if you change it
@@ -147,28 +114,30 @@ export default function GameOver () {
 		console.log("Submitted name:", submittedName);
 
 		// build payload for backend 
-		const payload2 = {
-			display_name: submittedName,
-			correct_to_total_ratio: queries.infinitymode
-			? null
-			: ((score || 0) / Number(queries.questions)) || null,
+
+		const payload = {
+			correct_answers: score || 0,
+			total_questions: queries.infinitymode ? null : Number(queries.questions) || null,
 			time_taken: timeTaken,
-			difficulty: queries.difficulty || "medium",
+			difficulty: queries.difficulty || 'medium',
+			categories_list: queries.categories || [],
+			mode: queries.timemode ? 'timed' : 'practice',
+			player_name: submittedName
 		};
 
-		console.log("payload2", payload2);
+		console.log("payload", payload);
 		// Send to backend — default to localhost:8000 for development, for production an env variable NEXT_PUBLIC_BACKEND_URL will have to be set pointing to the production backend url
-		const base2 =
+		const base =
 			typeof window !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL
 			? process.env.NEXT_PUBLIC_BACKEND_URL
 			: "http://localhost:8000";
 
-		const url2 = `${base2}/api/games/leaderboard/${queries.difficulty}/`;
+		const url = `${base}/api/games/`;
 
-		fetch(url2, {
+		fetch(url, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(payload2),
+			body: JSON.stringify(payload),
 		})
 			.then((res) => {
 			if (!res.ok) {

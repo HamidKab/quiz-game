@@ -24,8 +24,8 @@ class GameResultAdmin(admin.ModelAdmin):
 class LeaderboardEntryAdmin(admin.ModelAdmin):
     """Admin for Leaderboard model: show key fields and provide filtering options."""
     list_display = (
+        'player_name',
         'user',
-        "display_name",
         'correct_to_total_ratio',
         'time_taken',   
     )
