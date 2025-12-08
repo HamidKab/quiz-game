@@ -38,20 +38,10 @@ class GameResultListCreateAPIView(generics.ListCreateAPIView):
         else:
             serializer.save()
 
-class LeaderboardListEasyAPIView(generics.ListAPIView):
+class LeaderboardListEasyAPIView(generics.ListCreateAPIView):
     # Annotate GameResult rows with accuracy (correct/total) and order by it then time
     queryset = (
-        GameResult.objects.filter(difficulty=GameResult.DIFFICULTY_EASY)
-        .annotate(
-            correct_to_total_ratio=ExpressionWrapper(
-                Case(
-                    When(total_questions__gt=0, then=F('correct_answers') * 1.0 / F('total_questions')),
-                    default=Value(0.0),
-                    output_field=FloatField(),
-                ),
-                output_field=FloatField()
-            )
-        )
+        LeaderboardEntry.objects.filter(difficulty=LeaderboardEntry.DIFFICULTY_EASY)
         .order_by('-correct_to_total_ratio', 'time_taken')[:10]
     )
     # Use serializer that can handle annotated GameResult instances
@@ -65,19 +55,9 @@ class LeaderboardListEasyAPIView(generics.ListAPIView):
         else:
             serializer.save()
 
-class LeaderboardListMediumAPIView(generics.ListAPIView):
+class LeaderboardListMediumAPIView(generics.ListCreateAPIView):
     queryset = (
-        GameResult.objects.filter(difficulty=GameResult.DIFFICULTY_MEDIUM)
-        .annotate(
-            correct_to_total_ratio=ExpressionWrapper(
-                Case(
-                    When(total_questions__gt=0, then=F('correct_answers') * 1.0 / F('total_questions')),
-                    default=Value(0.0),
-                    output_field=FloatField(),
-                ),
-                output_field=FloatField()
-            )
-        )
+        LeaderboardEntry.objects.filter(difficulty=LeaderboardEntry.DIFFICULTY_MEDIUM)
         .order_by('-correct_to_total_ratio', 'time_taken')[:10]
     )
     serializer_class = LeaderboardEntrySerializer
@@ -90,20 +70,10 @@ class LeaderboardListMediumAPIView(generics.ListAPIView):
         else:
             serializer.save()
 
-class LeaderboardListHardAPIView(generics.ListAPIView):
+class LeaderboardListHardAPIView(generics.ListCreateAPIView):
     queryset = (
-        GameResult.objects.filter(difficulty=GameResult.DIFFICULTY_HARD)
-        .annotate(
-            correct_to_total_ratio=ExpressionWrapper(
-                Case(
-                    When(total_questions__gt=0, then=F('correct_answers') * 1.0 / F('total_questions')),
-                    default=Value(0.0),
-                    output_field=FloatField(),
-                ),
-                output_field=FloatField()
-            )
-        )
-        .order_by('-correct_to_total_ratio', 'time_taken')[:10]
+        LeaderboardEntry.objects.filter(difficulty=LeaderboardEntry.DIFFICULTY_HARD)
+        .order_by('correct_to_total_ratio', 'time_taken')[:10]
     )
     serializer_class = LeaderboardEntrySerializer
     permission_classes = [permissions.AllowAny]

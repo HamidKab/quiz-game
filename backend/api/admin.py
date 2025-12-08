@@ -25,8 +25,9 @@ class LeaderboardEntryAdmin(admin.ModelAdmin):
     """Admin for Leaderboard model: show key fields and provide filtering options."""
     list_display = (
         'user',
+        "display_name",
         'correct_to_total_ratio',
-        'time_taken',
+        'time_taken',   
     )
     list_filter = ('correct_to_total_ratio', 'time_taken')
     search_fields = ('user__username',)
