@@ -1,3 +1,4 @@
+import Leaderboard from '@/components/Leaderboard'
 import categories from '@/assets/categories.json'
 import PageFooter from '../PageFooter'
 import playSound from '@/helpers/playSound'
@@ -40,6 +41,7 @@ export default function MainHome () {
 					Play an infinite number of possible questions!
 				</p>
 			</article>
+			<Leaderboard />
 			<div className='w-full max-w-md mx-auto mt-8'>
 				<div className='flex flex-col sm:flex-row gap-3 justify-center items-center'>
 					<button onClick={handlePlay} id='play' className='btn-primary uppercase px-4 py-3 text-base w-full sm:w-auto'>
