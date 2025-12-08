@@ -22,6 +22,7 @@ class GameResultSerializer(serializers.ModelSerializer):
             "mode",
             "categories_list",
             "played_at",
+            "player_name",
         ]
         read_only_fields = ["id", "played_at"]
 
@@ -56,10 +57,12 @@ class LeaderboardEntrySerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "user",
+            "display_name",
             "correct_to_total_ratio",
             "time_taken",
+            "difficulty",
         ]
-        read_only_fields = ["id", "correct_to_total_ratio", "time_taken"]
+        read_only_fields = ["id", "user"]
 
     def to_representation(self, instance):
         # Provide a compact, frontend-friendly representation
