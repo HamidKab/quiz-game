@@ -3,7 +3,7 @@ import categories from '@/assets/categories.json'
 import PageFooter from '../PageFooter'
 import playSound from '@/helpers/playSound'
 import { useEffect, useState } from 'react'
-import { signIn, signOut, onAuthChange, db, collection, addDoc, doc, getDoc, setDoc } from '@/helpers/fireBase'
+import { signIn, signOut, onAuthChange, } from '@/helpers/fireBase'
 
 export default function MainHome () {
 	function handleTitleHover (e) {

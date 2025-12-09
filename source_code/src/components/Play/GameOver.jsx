@@ -24,8 +24,6 @@ const canvasStyles = {
 let timeTaken = null // to hold time taken value for submission
 
 export default function GameOver () {
-	const [playerName, setPlayerName] = useState("")
-	const [submitted, setSubmitted] = useState(false)
 	const [inputValue, setInputValue] = useState("")
 	const [placeholder, setPlaceholder] = useState("Enter your name (optional)")
 	const { queries, score, win } = useBoundStore(state => state)
@@ -104,10 +102,8 @@ export default function GameOver () {
 		if (!submittedName) return;
 
 		// UI updates
-		setPlayerName(submittedName);
 		setPlaceholder(placeholderMessage()); 
 		setInputValue("");
-		setSubmitted(true);
 
 		// build payload for backend 
 
