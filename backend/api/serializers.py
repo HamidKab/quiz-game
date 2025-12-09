@@ -51,9 +51,10 @@ class GameResultSerializer(serializers.ModelSerializer):
     
 class LeaderboardEntrySerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(read_only=True)
+    correct_to_total_ratio = serializers.FloatField(read_only=True)
 
     class Meta:
-        model = LeaderboardEntry
+        model = GameResult
         fields = [
             "id",
             "user",
