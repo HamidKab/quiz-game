@@ -25,7 +25,7 @@ describe('Leaderboard Component', () => {
     const mockData = [
       {
         id: 1,
-        display_name: 'TestPlayer',
+        player_name: 'TestPlayer',
         correct_answers: 10,
         total_questions: 10,
         correct_to_total_ratio: 1.0,

@@ -121,7 +121,7 @@ class LeaderboardAPITest(TestCase):
             mode=GameResult.MODE_TIMED,
             player_name='Player2',
         )
-        resp = self.client.get('/api/leaderboard/easy/')
+        resp = self.client.get('/api/games/leaderboard/easy/')
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertIsInstance(data, list)
@@ -146,7 +146,7 @@ class LeaderboardAPITest(TestCase):
             mode=GameResult.MODE_TIMED,
             player_name='Player4',
         )
-        resp = self.client.get('/api/leaderboard/medium/')
+        resp = self.client.get('/api/games/leaderboard/medium/')
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertIsInstance(data, list)
@@ -171,7 +171,7 @@ class LeaderboardAPITest(TestCase):
             mode=GameResult.MODE_TIMED,
             player_name='Player6',
         )
-        resp = self.client.get('/api/leaderboard/hard/')
+        resp = self.client.get('/api/games/leaderboard/hard/')
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertIsInstance(data, list)
