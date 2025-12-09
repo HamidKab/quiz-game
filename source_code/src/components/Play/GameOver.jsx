@@ -85,9 +85,6 @@ export default function GameOver () {
 			if (startTime) {
 				timeTaken = (Date.now() - startTime) / 1000
 			}
-
-			console.log("difficulty", queries.difficulty)
-			console.log("timeTaken", timeTaken)
 		}
 	}, [win])
 
@@ -106,12 +103,11 @@ export default function GameOver () {
 		const submittedName = inputValue.trim();
 		if (!submittedName) return;
 
-		// existing UI updates
+		// UI updates
 		setPlayerName(submittedName);
-		setPlaceholder(placeholderMessage());   // or placeholderMessage(submittedName) if you change it
+		setPlaceholder(placeholderMessage()); 
 		setInputValue("");
 		setSubmitted(true);
-		console.log("Submitted name:", submittedName);
 
 		// build payload for backend 
 
@@ -122,10 +118,9 @@ export default function GameOver () {
 			difficulty: queries.difficulty || 'medium',
 			categories_list: queries.categories || [],
 			mode: queries.timemode ? 'timed' : 'practice',
-			player_name: submittedName
+			player_name: submittedName,
 		};
-
-		console.log("payload", payload);
+		
 		// Send to backend — default to localhost:8000 for development, for production an env variable NEXT_PUBLIC_BACKEND_URL will have to be set pointing to the production backend url
 		const base =
 			typeof window !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL
